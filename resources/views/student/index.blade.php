@@ -27,6 +27,7 @@
                             <td>NIM</td>
                             <td>Nama</td>
                             <td>Prodi</td>
+                            <td>Foto</td>
                             <td>#</td>
                         </thead>
                         <tbody>
@@ -37,16 +38,25 @@
                                 <td>{{ $data->nama }}</td>
                                 <td>{{ $data->prodi }}</td>
                                 <td>
-                                    <a href="/student/edit/{{ $data->nim }}" class="btn btn-sm btn-warning mr-1">Edit</a>
+                                    @if($data->foto)
+                                    <img class="my-2 img-fluid" src="{{ asset('storage/' . $data->foto) }}" style="width:60px; height:60px; object-fit:cover;">
+                                    @else
+                                    <span class="text-muted">Tidak ada foto</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="/student/edit/{{ $data->nim }}" class="btn btn-sm btn-warning my-1">Edit</a>
                                     <form method="POST" action="/student/delete/{{ $data->nim }}" style="display:inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-danger my-1">Hapus</button>
                                     </form>
+                                    <a href="/student/download/{{ $data->nim }}" class="btn btn-sm btn-primary my-1">Download</a>
+                                    <a href="/student/preview/{{ $data->nim }}" class="btn btn-sm btn-info my-1">Preview</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">Tidak ada data untuk ditampilkan !</td>
+                                <td colspan="6">Tidak ada data untuk ditampilkan !</td>
                             </tr>
                         @endforelse
                         </tbody>
@@ -56,7 +66,5 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -14,7 +14,7 @@
                 Tambah Siswa
                 <a href="/student" class="btn btn-danger float-right">Kembali</a>
             </div>
-            <form action="/student/add" method="POST">
+            <form action="/student/add" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="card-body">
                     @if(session('notifikasi'))
@@ -40,6 +40,13 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Foto <b class="text-danger">*</b></label>
+                        <input type="file" name="foto" id="foto" accept="image/jpeg, image/jpg, image/png"
+                            class="form-control @error('foto') is-invalid @enderror">
+                        @error('foto')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
                         <label>Prodi <b class="text-danger">*</b></label>
                         <select name="prodi" class="form-control @error('prodi') is-invalid @enderror">
                             <option value="">- Pilih Prodi -</option>
@@ -59,5 +66,27 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('foto').addEventListener('change', function() {
+    const file = this.files[0];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    if (file) {
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file harus JPEG, JPG, atau PNG!');
+            this.value = '';
+            return;
+        }
+        if (file.size > maxSize) {
+            alert('Ukuran file maksimal 2MB!');
+            this.value = '';
+            return;
+        }
+    }
+});
+</script>
+
 </body>
 </html>

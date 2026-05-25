@@ -14,7 +14,7 @@
                 Edit Siswa
                 <a href="/student" class="btn btn-danger float-right">Kembali</a>
             </div>
-            <form action="/student/edit/{{ $student->nim }}" method="POST">
+            <form action="/student/edit/{{ $student->nim }}" method="POST" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <input name="old_nim" type="hidden" value="{{ $student->nim }}">
                 <div class="card-body">
@@ -41,6 +41,29 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Foto Lama <b class="text-danger">*</b></label>
+                        <div>
+                            @if($student->foto)
+                            <img class="my-2 img-fluid" src="{{ asset('storage/' . $student->foto) }}" style="width:80px; height:80px; object-fit:cover;">
+                            @else
+                            <span class="text-muted">Tidak ada foto</span>
+                            @endif
+                        </div>
+                        <div class="form-check">
+                            <input type="hidden" name="ganti_foto" value="0">
+                            <input type="checkbox" name="ganti_foto" id="ganti_foto" class="form-check-input" value="1" onclick="check_ganti()">
+                            <label for="ganti_foto" class="form-check-label">Ganti Foto</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="ganti_foto_div" style="display:none">
+                        <label>Foto Baru <b class="text-danger">*</b></label>
+                        <input type="file" name="foto" id="foto" accept="image/jpeg, image/jpg, image/png"
+                            class="form-control @error('foto') is-invalid @enderror">
+                        @error('foto')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="form-group">
                         <label>Prodi <b class="text-danger">*</b></label>
                         <select name="prodi" class="form-control @error('prodi') is-invalid @enderror">
                             <option value="">- Pilih Prodi -</option>
@@ -60,5 +83,36 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script>
+function check_ganti() {
+    let ganti = $('#ganti_foto');
+    let ganti_foto_div = $('#ganti_foto_div');
+    let foto = $('#foto');
+    ganti_foto_div.toggle(ganti.prop('checked'));
+    foto.prop('required', ganti.prop('checked'));
+}
+
+document.getElementById('foto').addEventListener('change', function() {
+    const file = this.files[0];
+    const maxSize = 2 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    if (file) {
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file harus JPEG, JPG, atau PNG!');
+            this.value = '';
+            return;
+        }
+        if (file.size > maxSize) {
+            alert('Ukuran file maksimal 2MB!');
+            this.value = '';
+            return;
+        }
+    }
+});
+</script>
+
 </body>
 </html>
