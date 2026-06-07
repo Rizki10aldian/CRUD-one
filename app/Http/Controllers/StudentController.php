@@ -41,7 +41,9 @@ class StudentController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            $foto = $request->file('foto')->store('foto', 'public');
+            $file = $request->file('foto');
+            $filename = time() . '_' . $request->nim . '.' . $file->getClientOriginalExtension();
+            $foto = $file->storeAs('foto', $filename, 'public');
         } else {
             $foto = null;
         }
@@ -103,15 +105,19 @@ class StudentController extends Controller
             ]);
 
             if ($request->hasFile('foto')) {
-                $foto = $request->file('foto')->store('foto', 'public');
+                // Hapus foto lama dulu
+                if (!empty($student->foto) && Storage::disk('public')->exists($student->foto)) {
+                    Storage::disk('public')->delete($student->foto);
+                }
+                $file = $request->file('foto');
+                $filename = time() . '_' . $request->nim . '.' . $file->getClientOriginalExtension();
+                $foto = $file->storeAs('foto', $filename, 'public');
             } else {
-                $foto = null;
+                $foto = $student->foto;
             }
         } else {
             $foto = $student->foto;
         }
-
-        $old_foto = $student->foto;
 
         $student->nim   = $request->nim;
         $student->nama  = $request->nama;
@@ -120,11 +126,6 @@ class StudentController extends Controller
         $student->foto  = $foto ?? null;
 
         if ($student->save()) {
-            if ($request->ganti_foto == 1) {
-                if (!empty($old_foto) && Storage::disk('public')->exists($old_foto)) {
-                    Storage::disk('public')->delete($old_foto);
-                }
-            }
             return redirect('/student')->with(['notifikasi' => 'Data Berhasil diedit !', 'type' => 'success']);
         } else {
             return redirect()->back()->with(['notifikasi' => 'Data gagal diedit !', 'type' => 'danger']);
@@ -149,7 +150,17 @@ class StudentController extends Controller
     public function download(string $id)
     {
         $student = Student::where('nim', $id)->firstOrFail();
-        $file_path = public_path('storage/' . $student->foto);
+
+        if (empty($student->foto)) {
+            return redirect('/student')->with(['notifikasi' => 'Siswa ini tidak memiliki foto!', 'type' => 'danger']);
+        }
+
+        $file_path = storage_path('app/public/' . $student->foto);
+
+        if (!file_exists($file_path)) {
+            return redirect('/student')->with(['notifikasi' => 'File foto tidak ditemukan!', 'type' => 'danger']);
+        }
+
         $file_name = 'foto-' . $student->nim . '.' . pathinfo($file_path, PATHINFO_EXTENSION);
         return response()->download($file_path, $file_name);
     }
@@ -157,7 +168,20 @@ class StudentController extends Controller
     public function preview(string $id)
     {
         $student = Student::where('nim', $id)->firstOrFail();
-        $file_path = public_path('storage/' . $student->foto);
-        return response()->file($file_path);
+
+        if (empty($student->foto)) {
+            return redirect('/student')->with(['notifikasi' => 'Siswa ini tidak memiliki foto!', 'type' => 'danger']);
+        }
+
+        $file_path = storage_path('app/public/' . $student->foto);
+
+        if (!file_exists($file_path)) {
+            return redirect('/student')->with(['notifikasi' => 'File foto tidak ditemukan!', 'type' => 'danger']);
+        }
+
+        return response()->file($file_path, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            'Pragma'        => 'no-cache',
+        ]);
     }
 }
